@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BlazorGame.Data
@@ -12,12 +13,14 @@ namespace BlazorGame.Data
             QuizItems = new List<QuizItem> {
                 new QuizItem
                 {
+                    Id = Guid.NewGuid(),
                     Question = "4 + 7 = ?",
                     Answer = "11",
                     Score = 1
                 },
                 new QuizItem
                 {
+                    Id = Guid.NewGuid(),
                     Question = "Where is the code of this application hosted?",
                     Answer = "Github",
                     Score = 5

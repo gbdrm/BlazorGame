@@ -1,7 +1,50 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@using BlazorGame.Data
+@inject QuizService QuizService
 
-Welcome to your new app.
+<p>Your current score is <b>@currentScore</b></p>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@if (quiz == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @foreach (var quizItem in quiz)
+    {
+        var isDone = done.Contains(quizItem.Id);
+        var doneStyle = isDone ? "text-decoration:line-through" : "";
+        <section>
+            <h3 style="@doneStyle">@quizItem.Question</h3>
+            <div>
+                @if (!isDone)
+                {
+                    <input type="text" @oninput="@((eventArgs) => CheckAnswer(eventArgs.Value.ToString(), quizItem.Id))" />
+                }
+            </div>
+        </section>
+    }
+}
+
+@code {
+    List<QuizItem> quiz;
+    int currentScore = 0;
+    List<Guid> done = new List<Guid>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        quiz = await QuizService.GetQuizesAsync();
+    }
+
+    void CheckAnswer(string answer, Guid id)
+    {
+        var quizItem = quiz.SingleOrDefault(q => q.Id == id);
+        var dbAnswer = quizItem?.Answer.ToLower();
+        if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
+        {
+            currentScore++;
+            done.Add(id);
+        }
+    }
+}
