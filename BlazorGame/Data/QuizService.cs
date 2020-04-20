@@ -49,5 +49,10 @@ namespace BlazorGame.Data
 
             Completed[userId].Add(quizItemId);
         }
+
+        public int GetCurrentScore(Guid userId)
+        {
+            return Completed.ContainsKey(userId) ? Completed[userId].Count : 0;
+        }
     }
 }

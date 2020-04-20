@@ -3,6 +3,9 @@
 @using BlazorGame.Data
 @inject QuizService QuizService
 
+@using Microsoft.AspNetCore.ProtectedBrowserStorage
+@inject ProtectedLocalStorage ProtectedLocalStorage
+
 <p>Your current score is <b>@state.CurrentScore</b></p>
 
 @if (quiz == null)
@@ -23,6 +26,17 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        state.UserId = await ProtectedLocalStorage.GetAsync<Guid>("userId");
+        if (state.UserId == Guid.Empty)
+        {
+            state.UserId = Guid.NewGuid();
+            await ProtectedLocalStorage.SetAsync("userId", state.UserId);
+        }
+        else
+        {
+            state.CurrentScore = QuizService.GetCurrentScore(state.UserId);
+        }
+
         quiz = await QuizService.GetQuizesAsync(state.UserId);
     }
 
