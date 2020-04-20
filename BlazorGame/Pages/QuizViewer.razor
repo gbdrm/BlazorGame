@@ -1,0 +1,34 @@
+﻿@using BlazorGame.Data
+@inject QuizService QuizService
+
+<section style="@style" >
+    <h3>@Item.Question</h3>
+    <div>
+        <input type="text" @oninput="@((eventArgs) => CheckAnswer(eventArgs.Value.ToString(), Item.Id))" />
+    </div>
+</section>
+
+@code{
+    [Parameter]
+    public QuizItem Item { get; set; }
+
+    [Parameter]
+    public UserState State { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnScoreChanged { get; set; }
+
+    string style = "";
+
+    async void CheckAnswer(string answer, Guid quizItemId)
+    {
+        var dbAnswer = Item?.Answer.ToLower();
+        if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
+        {
+            await OnScoreChanged.InvokeAsync(++State.CurrentScore);
+
+            await QuizService.MarkAsDoneAsync(State.UserId, quizItemId);
+            style = "display:none";
+        }
+    }
+}

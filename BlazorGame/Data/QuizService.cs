@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BlazorGame.Data
@@ -7,6 +8,7 @@ namespace BlazorGame.Data
     public class QuizService
     {
         private static readonly List<QuizItem> QuizItems;
+        private static readonly Dictionary<Guid, HashSet<Guid>> Completed = new Dictionary<Guid, HashSet<Guid>>();
 
         static QuizService()
         {
@@ -28,9 +30,24 @@ namespace BlazorGame.Data
             };
         }
 
-        public Task<List<QuizItem>> GetQuizesAsync()
+        public async Task<List<QuizItem>> GetQuizesAsync(Guid userId)
         {
-            return Task.FromResult(QuizItems);
+            var completed = Completed.ContainsKey(userId) ? Completed[userId] : null;
+            List<QuizItem> result;
+            if (completed == null || completed.Count == 0) result = QuizItems;
+            else result = QuizItems.Where(i => !completed.Contains(i.Id)).ToList();
+
+            return result;
+        }
+
+        public async Task MarkAsDoneAsync(Guid userId, Guid quizItemId)
+        {
+            if (!Completed.ContainsKey(userId))
+            {
+                Completed.Add(userId, new HashSet<Guid>());
+            }
+
+            Completed[userId].Add(quizItemId);
         }
     }
 }

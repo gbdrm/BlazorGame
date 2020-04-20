@@ -3,7 +3,7 @@
 @using BlazorGame.Data
 @inject QuizService QuizService
 
-<p>Your current score is <b>@currentScore</b></p>
+<p>Your current score is <b>@state.CurrentScore</b></p>
 
 @if (quiz == null)
 {
@@ -13,38 +13,21 @@ else
 {
     @foreach (var quizItem in quiz)
     {
-        var isDone = done.Contains(quizItem.Id);
-        var doneStyle = isDone ? "text-decoration:line-through" : "";
-        <section>
-            <h3 style="@doneStyle">@quizItem.Question</h3>
-            <div>
-                @if (!isDone)
-                {
-                    <input type="text" @oninput="@((eventArgs) => CheckAnswer(eventArgs.Value.ToString(), quizItem.Id))" />
-                }
-            </div>
-        </section>
+        <QuizViewer Item="@quizItem" State="@state" OnScoreChanged="ScoreChanged" />
     }
 }
 
 @code {
     List<QuizItem> quiz;
-    int currentScore = 0;
-    List<Guid> done = new List<Guid>();
+    UserState state = new UserState();
 
     protected override async Task OnInitializedAsync()
     {
-        quiz = await QuizService.GetQuizesAsync();
+        quiz = await QuizService.GetQuizesAsync(state.UserId);
     }
 
-    void CheckAnswer(string answer, Guid id)
+    public async void ScoreChanged(int score)
     {
-        var quizItem = quiz.SingleOrDefault(q => q.Id == id);
-        var dbAnswer = quizItem?.Answer.ToLower();
-        if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
-        {
-            currentScore++;
-            done.Add(id);
-        }
+        state.CurrentScore = score;
     }
 }
