@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,60 +8,62 @@ namespace BlazorGame.Data
 {
     public class QuizService
     {
-        private static readonly List<QuizItem> QuizItems;
-        private static readonly Dictionary<Guid, HashSet<Guid>> Completed = new Dictionary<Guid, HashSet<Guid>>();
+        private readonly ApplicationDbContext _db;
 
-        static QuizService()
+        public QuizService(ApplicationDbContext db)
         {
-            QuizItems = new List<QuizItem> {
-                new QuizItem
-                {
-                    Id = Guid.NewGuid(),
-                    Question = "4 + 7 = ?",
-                    Answer = "11",
-                },
-                new QuizItem
-                {
-                    Id = Guid.NewGuid(),
-                    Question = "Where is the code of this application hosted?",
-                    Answer = "Github",
-                }
-            };
+            _db = db;
         }
 
         public async Task<List<QuizItem>> GetQuizesAsync(Guid userId)
         {
-            var completed = Completed.ContainsKey(userId) ? Completed[userId] : null;
-            List<QuizItem> result;
-            if (completed == null || completed.Count == 0) result = QuizItems;
-            else result = QuizItems.Where(i => !completed.Contains(i.Id)).ToList();
+            var result = await _db.QuizItems
+                .Where(q => !q.Completed.Any(c => c.UserId == userId))
+                .ToListAsync();
 
             return result;
         }
 
         public async Task MarkAsDoneAsync(Guid userId, Guid quizItemId)
         {
-            if (!Completed.ContainsKey(userId))
+            var done = await _db.Completed.FirstOrDefaultAsync(c => c.UserId == userId && c.ItemId == quizItemId);
+            if(done == null)
             {
-                Completed.Add(userId, new HashSet<Guid>());
+                _db.Completed.Add(new Models.Completed { ItemId = quizItemId, UserId = userId });
+                await _db.SaveChangesAsync();
+            }
+        }
+
+        public async Task<UserState> GetStateAsync(Guid userId)
+        {
+            var user = await _db.UserStates.FindAsync(userId);
+            if(user == null)
+            {
+                user = new UserState
+                {
+                    CurrentScore = 0,
+                    UserId = userId,
+                    CanCreate = true
+                };
+                
+                await _db.UserStates.AddAsync(user);
+                await _db.SaveChangesAsync();
             }
 
-            Completed[userId].Add(quizItemId);
+            return user;
         }
 
-        public UserState GetState(Guid userId)
+        public async Task CreateQuizItemAsync(Guid userId, QuizItem quizItem)
         {
-            return new UserState
+            var user = await _db.UserStates.FindAsync(userId);
+            if (user.CanCreate)
             {
-                CurrentScore = Completed.ContainsKey(userId) ? Completed[userId].Count : 0,
-                UserId = userId,
-                CanCreate = true
-            };
-        }
+                await _db.QuizItems.AddAsync(quizItem);
+                await _db.SaveChangesAsync();
 
-        public void CreateQuizItem(Guid userId, QuizItem quizItem)
-        {
-
+                user.CanCreate = false;
+                await _db.SaveChangesAsync();
+            }
         }
     }
 }

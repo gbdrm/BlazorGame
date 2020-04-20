@@ -39,7 +39,7 @@ namespace BlazorGame
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-            services.AddSingleton<QuizService>();
+            services.AddScoped<QuizService>();
             services.AddProtectedBrowserStorage();
         }
 

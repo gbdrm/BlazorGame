@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using BlazorGame.Data.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,5 +10,9 @@ namespace BlazorGame.Data
             : base(options)
         {
         }
+
+        public DbSet<UserState> UserStates { get; set; }
+        public DbSet<QuizItem> QuizItems { get; set; }
+        public DbSet<Completed> Completed { get; set; }
     }
 }

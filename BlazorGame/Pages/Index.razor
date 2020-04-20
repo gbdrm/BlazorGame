@@ -53,7 +53,7 @@ else
             await ProtectedLocalStorage.SetAsync("userId", state.UserId);
         }
 
-        state = QuizService.GetState(state.UserId);
+        state = await QuizService.GetStateAsync(state.UserId);
         quiz = await QuizService.GetQuizesAsync(state.UserId);
     }
 
@@ -62,9 +62,9 @@ else
         state.CurrentScore = score;
     }
 
-    void CreateNewItem()
+    async Task CreateNewItem()
     {
-        QuizService.CreateQuizItem(state.UserId, quizItem);
+        await QuizService.CreateQuizItemAsync(state.UserId, quizItem);
         state.CanCreate = false;
         quiz.Add(quizItem);
         quizItem = new QuizItem();

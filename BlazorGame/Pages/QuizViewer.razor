@@ -25,10 +25,10 @@
         var dbAnswer = Item?.Answer.ToLower();
         if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
         {
+            style = "display:none";
             await OnScoreChanged.InvokeAsync(++State.CurrentScore);
 
             await QuizService.MarkAsDoneAsync(State.UserId, quizItemId);
-            style = "display:none";
         }
     }
 }

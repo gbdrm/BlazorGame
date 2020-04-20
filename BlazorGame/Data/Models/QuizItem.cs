@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BlazorGame.Data.Models;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace BlazorGame.Data
@@ -12,5 +14,7 @@ namespace BlazorGame.Data
 
         [Required]
         public string Answer { get; set; }
+
+        public virtual ICollection<Completed> Completed { get; set; }
     }
 }
