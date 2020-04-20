@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BlazorGame.Data
 {
@@ -10,5 +7,7 @@ namespace BlazorGame.Data
         public int CurrentScore { get; set; }
 
         public Guid UserId { get; set; }
+
+        public bool CanCreate { get; set; }
     }
 }

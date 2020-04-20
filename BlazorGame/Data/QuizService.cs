@@ -18,14 +18,12 @@ namespace BlazorGame.Data
                     Id = Guid.NewGuid(),
                     Question = "4 + 7 = ?",
                     Answer = "11",
-                    Score = 1
                 },
                 new QuizItem
                 {
                     Id = Guid.NewGuid(),
                     Question = "Where is the code of this application hosted?",
                     Answer = "Github",
-                    Score = 5
                 }
             };
         }
@@ -50,9 +48,19 @@ namespace BlazorGame.Data
             Completed[userId].Add(quizItemId);
         }
 
-        public int GetCurrentScore(Guid userId)
+        public UserState GetState(Guid userId)
         {
-            return Completed.ContainsKey(userId) ? Completed[userId].Count : 0;
+            return new UserState
+            {
+                CurrentScore = Completed.ContainsKey(userId) ? Completed[userId].Count : 0,
+                UserId = userId,
+                CanCreate = true
+            };
+        }
+
+        public void CreateQuizItem(Guid userId, QuizItem quizItem)
+        {
+
         }
     }
 }

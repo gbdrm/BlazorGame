@@ -8,6 +8,25 @@
 
 <p>Your current score is <b>@state.CurrentScore</b></p>
 
+@if (state.CanCreate)
+{
+    <EditForm Model="@quizItem" OnValidSubmit="CreateNewItem">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label>You can create your own question here.</label>
+            <InputText class="form-control" id="question" @bind-Value="quizItem.Question" placeholder="Question" />
+        </div>
+        <div class="form-group">
+            <InputText class="form-control" id="answer" @bind-Value="quizItem.Answer" placeholder="Answer" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create</button>
+    </EditForm>
+    <hr />
+}
+
 @if (quiz == null)
 {
     <p><em>Loading...</em></p>
@@ -23,6 +42,7 @@ else
 @code {
     List<QuizItem> quiz;
     UserState state = new UserState();
+    QuizItem quizItem = new QuizItem();
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,16 +52,21 @@ else
             state.UserId = Guid.NewGuid();
             await ProtectedLocalStorage.SetAsync("userId", state.UserId);
         }
-        else
-        {
-            state.CurrentScore = QuizService.GetCurrentScore(state.UserId);
-        }
 
+        state = QuizService.GetState(state.UserId);
         quiz = await QuizService.GetQuizesAsync(state.UserId);
     }
 
     public async void ScoreChanged(int score)
     {
         state.CurrentScore = score;
+    }
+
+    void CreateNewItem()
+    {
+        QuizService.CreateQuizItem(state.UserId, quizItem);
+        state.CanCreate = false;
+        quiz.Add(quizItem);
+        quizItem = new QuizItem();
     }
 }
