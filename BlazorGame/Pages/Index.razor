@@ -1,48 +1,56 @@
 ﻿@page "/"
-
 @using BlazorGame.Data
 @inject QuizService QuizService
+@inject Microsoft.AspNetCore.ProtectedBrowserStorage.ProtectedLocalStorage ProtectedLocalStorage
 
-@using Microsoft.AspNetCore.ProtectedBrowserStorage
-@inject ProtectedLocalStorage ProtectedLocalStorage
-
-<p>Your current score is <b>@state.CurrentScore</b></p>
-
-@if (state.CanCreate)
-{
-    <EditForm Model="@quizItem" OnValidSubmit="CreateNewItem">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="form-group">
-            <label>You can create your own question here.</label>
-            <InputText class="form-control" id="question" @bind-Value="quizItem.Question" placeholder="Question" />
+<div class="row p-3">
+    <div class="col-md-7 card">
+        <div class="card-body">
+            <QuizViewer Quiz="@quiz" State="@state" OnScoreChanged="@(async (int x) => await ScoreChanged(x))" ItemCreated="ItemCreated" />
         </div>
-        <div class="form-group">
-            <InputText class="form-control" id="answer" @bind-Value="quizItem.Answer" placeholder="Answer" />
+    </div>
+    <div class="col-md-4 card ml-5">
+        <div class="card-body">
+            <h5 class="card-title">Рейтинг</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Количество правильных ответов</h6>
+            <br />
+
+            <LeaderBoard Leaders="@leaders" />
+
+            <p class="form-group">
+                @if (string.IsNullOrEmpty(state.Name))
+                {
+                    <EditForm Model="@state" OnValidSubmit="SetName">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="form-group">
+                            <InputText class="form-control" id="name" @bind-Value="state.Name" placeholder="Ваше имя" />
+                            <label style="@nameOccupiedStyle">Это имя слишком короткое или уже занято, попробуйте другое</label>
+                        </div>
+                    
+                        <p>
+                            Ваши очки: <b>@state.CurrentScore</b>
+                            <button type="submit" class="btn btn-info ml-3">Добавить меня в рейтинг</button>
+                        </p>
+                    </EditForm>
+                }
+                else
+                {
+                    <p>
+                        Ваши очки: <b>@state.CurrentScore</b>
+                    </p>
+                }
+            </p>
         </div>
-
-        <button type="submit" class="btn btn-primary">Create</button>
-    </EditForm>
-    <hr />
-}
-
-@if (quiz == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    @foreach (var quizItem in quiz)
-    {
-        <QuizViewer Item="@quizItem" State="@state" OnScoreChanged="ScoreChanged" />
-    }
-}
+    </div>
+</div>
 
 @code {
     List<QuizItem> quiz;
     UserState state = new UserState();
-    QuizItem quizItem = new QuizItem();
+    string nameOccupiedStyle = "display:none";
+    Dictionary<string, int> leaders;
 
     protected override async Task OnInitializedAsync()
     {
@@ -54,19 +62,28 @@ else
         }
 
         state = await QuizService.GetStateAsync(state.UserId);
-        quiz = await QuizService.GetQuizesAsync(state.UserId);
+        quiz = await QuizService.GetQuizAsync(state.UserId);
+        leaders = QuizService.GetLeaders();
     }
 
-    public async void ScoreChanged(int score)
+    async Task ScoreChanged(int score)
     {
         state.CurrentScore = score;
+        quiz = await QuizService.GetQuizAsync(state.UserId);
+        leaders = QuizService.GetLeaders();
+        StateHasChanged();
     }
 
-    async Task CreateNewItem()
+    void ItemCreated(QuizItem quizItem)
     {
-        await QuizService.CreateQuizItemAsync(state.UserId, quizItem);
-        state.CanCreate = false;
         quiz.Add(quizItem);
-        quizItem = new QuizItem();
+    }
+
+    async Task SetName()
+    {
+        var isOk = await QuizService.SetNameAsync(state.UserId, state.Name);
+        nameOccupiedStyle = isOk ? "display:none" : "";
+        if (!isOk) state.Name = null;
+        StateHasChanged();
     }
 }

@@ -15,10 +15,11 @@ namespace BlazorGame.Data
             _db = db;
         }
 
-        public async Task<List<QuizItem>> GetQuizesAsync(Guid userId)
+        public async Task<List<QuizItem>> GetQuizAsync(Guid userId)
         {
             var result = await _db.QuizItems
                 .Where(q => !q.Completed.Any(c => c.UserId == userId))
+                .Take(3)
                 .ToListAsync();
 
             return result;
@@ -64,6 +65,30 @@ namespace BlazorGame.Data
                 user.CanCreate = false;
                 await _db.SaveChangesAsync();
             }
+        }
+
+        public Dictionary<string, int> GetLeaders()
+        {
+            var result = _db.UserStates
+                .Where(u => u.Name != null)
+                .OrderByDescending(u => u.CurrentScore)
+                .Take(10)
+                .ToDictionary(u => u.Name, u => u.CurrentScore);
+
+            return result;
+        }
+
+        public async Task<bool> SetNameAsync(Guid userId, string name)
+        {
+            if (string.IsNullOrWhiteSpace(name) || name.Length < 3) return false;
+
+            var isUnique = await _db.UserStates.FirstOrDefaultAsync(u => u.Name == name);
+            if (isUnique != null) return false;
+
+            var user = await _db.UserStates.FindAsync(userId);
+            user.Name = name;
+            await _db.SaveChangesAsync();
+            return true;
         }
     }
 }

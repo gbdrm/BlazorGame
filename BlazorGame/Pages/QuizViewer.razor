@@ -1,16 +1,26 @@
 ﻿@using BlazorGame.Data
 @inject QuizService QuizService
 
-<section style="@style" >
-    <h3>@Item.Question</h3>
-    <div>
-        <input type="text" @oninput="@((eventArgs) => CheckAnswer(eventArgs.Value.ToString(), Item.Id))" />
-    </div>
-</section>
+@if (Quiz == null)
+{
+    <p><em>Загрузка...</em></p>
+}
+else
+{
+    <h5 class="card-title">Доступные вопросы</h5>
+    <h6 class="card-subtitle mb-2 text-muted">Обновляются после правильного ответа</h6>
+    <br />
+    @foreach (var quizItem in Quiz)
+    {
+        <QuestionViewer Item="@quizItem" State="@State" OnScoreChanged="OnScoreChanged" />
+    }
+
+    <CreateQuestion State="@State" OnCreated="ItemCreated" />
+}
 
 @code{
     [Parameter]
-    public QuizItem Item { get; set; }
+    public List<QuizItem> Quiz { get; set; }
 
     [Parameter]
     public UserState State { get; set; }
@@ -18,17 +28,6 @@
     [Parameter]
     public EventCallback<int> OnScoreChanged { get; set; }
 
-    string style = "";
-
-    async void CheckAnswer(string answer, Guid quizItemId)
-    {
-        var dbAnswer = Item?.Answer.ToLower();
-        if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
-        {
-            style = "display:none";
-            await OnScoreChanged.InvokeAsync(++State.CurrentScore);
-
-            await QuizService.MarkAsDoneAsync(State.UserId, quizItemId);
-        }
-    }
+    [Parameter]
+    public EventCallback<QuizItem> ItemCreated { get; set; }
 }
