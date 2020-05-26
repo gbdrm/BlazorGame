@@ -11,8 +11,8 @@
     </div>
     <div class="col-md-4 card ml-5">
         <div class="card-body">
-            <h5 class="card-title">Рейтинг</h5>
-            <h6 class="card-subtitle mb-2 text-muted">Количество правильных ответов</h6>
+            <h5 class="card-title">Топ 10</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Рейтинг правильных ответов</h6>
             <br />
 
             <LeaderBoard Leaders="@leaders" />
@@ -84,6 +84,7 @@
         var isOk = await QuizService.SetNameAsync(state.UserId, state.Name);
         nameOccupiedStyle = isOk ? "display:none" : "";
         if (!isOk) state.Name = null;
+        leaders = QuizService.GetLeaders();
         StateHasChanged();
     }
 }
