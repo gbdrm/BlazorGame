@@ -28,63 +28,65 @@
                             <InputText class="form-control" id="name" @bind-Value="state.Name" placeholder="Ваше имя" />
                             <label style="@nameOccupiedStyle">Это имя слишком короткое или уже занято, попробуйте другое</label>
                         </div>
-                    
-                        <p>
+                        <div>
                             Ваши очки: <b>@state.CurrentScore</b>
-                            <button type="submit" class="btn btn-info ml-3">Добавить меня в рейтинг</button>
-                        </p>
+                        </div>
+
                     </EditForm>
                 }
                 else
                 {
-                    <p>
-                        Ваши очки: <b>@state.CurrentScore</b>
-                    </p>
-                }
-            </p>
+                <p>
+                    Ваши очки: <b>@state.CurrentScore</b>
+                </p>
+            }
+                </p>
+            </div>
         </div>
     </div>
-</div>
 
-@code {
-    List<QuizItem> quiz;
-    UserState state = new UserState();
-    string nameOccupiedStyle = "display:none";
-    Dictionary<string, int> leaders;
+    @code {
+        List<QuizItem> quiz;
+        UserState state = new UserState();
+        string nameOccupiedStyle = "display:none";
+        Dictionary<string, int> leaders;
 
-    protected override async Task OnInitializedAsync()
-    {
-        state.UserId = await ProtectedLocalStorage.GetAsync<Guid>("userId");
-        if (state.UserId == Guid.Empty)
+        protected override async Task OnInitializedAsync()
         {
-            state.UserId = Guid.NewGuid();
-            await ProtectedLocalStorage.SetAsync("userId", state.UserId);
+            state.UserId = await ProtectedLocalStorage.GetAsync<Guid>("userId");
+            if (state.UserId == Guid.Empty)
+            {
+                state.UserId = Guid.NewGuid();
+                await ProtectedLocalStorage.SetAsync("userId", state.UserId);
+            }
+
+            state = await QuizService.GetStateAsync(state.UserId);
+            quiz = await QuizService.GetQuizAsync(state.UserId);
+            leaders = QuizService.GetLeaders();
         }
 
-        state = await QuizService.GetStateAsync(state.UserId);
-        quiz = await QuizService.GetQuizAsync(state.UserId);
-        leaders = QuizService.GetLeaders();
-    }
+        async Task ScoreChanged(int score)
+        {
+            state.CurrentScore = score;
+            quiz = await QuizService.GetQuizAsync(state.UserId);
+            leaders = QuizService.GetLeaders();
+            StateHasChanged();
+        }
 
-    async Task ScoreChanged(int score)
-    {
-        state.CurrentScore = score;
-        quiz = await QuizService.GetQuizAsync(state.UserId);
-        leaders = QuizService.GetLeaders();
-        StateHasChanged();
-    }
+        void ItemCreated(QuizItem quizItem)
+        {
+            quiz.Add(quizItem);
+        }
 
-    void ItemCreated(QuizItem quizItem)
-    {
-        quiz.Add(quizItem);
+        async Task SetName()
+        {
+            var isOk = await QuizService.SetNameAsync(state.UserId, state.Name);
+            nameOccupiedStyle = isOk ? "display:none" : "";
+            if (!isOk) state.Name = null;
+            else
+            {
+                leaders = QuizService.GetLeaders();
+                StateHasChanged();
+            }
+        }
     }
-
-    async Task SetName()
-    {
-        var isOk = await QuizService.SetNameAsync(state.UserId, state.Name);
-        nameOccupiedStyle = isOk ? "display:none" : "";
-        if (!isOk) state.Name = null;
-        leaders = QuizService.GetLeaders();
-        StateHasChanged();
-    }
-}

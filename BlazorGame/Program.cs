@@ -21,24 +21,23 @@ namespace BlazorGame
         {
             IHost webHost = CreateHostBuilder(args).Build();
 
-            // initialize database with initial data
-            using (var scope = webHost.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                try
-                {
-                    using (var context = services.GetService<ApplicationDbContext>())
-                    {
-                        context.Database.Migrate();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debugger.Break();
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred during initializing the DB.");
-                }
-            }
+            //using (var scope = webHost.Services.CreateScope())
+            //{
+            //    var services = scope.ServiceProvider;
+            //    try
+            //    {
+            //        using (var context = services.GetService<ApplicationDbContext>())
+            //        {
+            //            context.Database.Migrate();
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Debugger.Break();
+            //        var logger = services.GetRequiredService<ILogger<Program>>();
+            //        logger.LogError(ex, "An error occurred during initializing the DB.");
+            //    }
+            //}
 
             webHost.Run();
         }
