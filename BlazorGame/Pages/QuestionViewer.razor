@@ -23,8 +23,10 @@
         var dbAnswer = Item?.Answer.ToLower();
         if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
         {
-            await QuizService.MarkAsDoneAsync(State.UserId, quizItemId);
-            await OnScoreChanged.InvokeAsync(++State.CurrentScore);
+            var score = await QuizService.MarkAsDoneAsync(State.UserId, quizItemId);
+
+            if(score.HasValue)
+                await OnScoreChanged.InvokeAsync(score.Value);
         }
     }
 }

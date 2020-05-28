@@ -14,5 +14,6 @@ namespace BlazorGame.Data
         public DbSet<UserState> UserStates { get; set; }
         public DbSet<QuizItem> QuizItems { get; set; }
         public DbSet<Completed> Completed { get; set; }
+        public DbSet<Message> Messages { get; set; }
     }
 }

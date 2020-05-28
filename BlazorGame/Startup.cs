@@ -38,6 +38,7 @@ namespace BlazorGame
             //       Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddRazorPages();
+            services.AddSignalRCore();
             services.AddServerSideBlazor();
             services.AddScoped<QuizService>();
             services.AddProtectedBrowserStorage();
@@ -70,6 +71,7 @@ namespace BlazorGame
             {
                 endpoints.MapControllers();
                 endpoints.MapBlazorHub();
+                endpoints.MapHub<ChatHub>("/ChatHub");
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
