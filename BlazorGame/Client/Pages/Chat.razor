@@ -1,0 +1,68 @@
+﻿@page "/chat"
+@using BlazorGame.Data
+@using BlazorGame.Data.Models
+@using Microsoft.AspNetCore.SignalR.Client
+@*@inject Microsoft.AspNetCore.ProtectedBrowserStorage.ProtectedLocalStorage ProtectedLocalStorage*@
+@inject NavigationManager NavigationManager
+
+
+<div class="row p-3">
+    <div class="col-md-7 card">
+        <div class="card-body">
+            <ul>
+                @foreach (var item in (messages ?? new List<Message>()).Skip(Math.Max(0, (messages?.Count() ?? 0) - 20)))
+                {
+                    <li>
+                        @item.Created.ToShortTimeString() <b>@(item.User?.Name ?? "Аноним")</b>: @item.Text
+                    </li>
+                }
+            </ul>
+
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" @bind="message" @onkeyup="KeyUp">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button" @onclick="SendMessage">Отправить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    List<Message> messages;
+    string message;
+    Guid userId;
+    HubConnection _hubConnection;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = Guid.Empty; //await ProtectedLocalStorage.GetAsync<Guid>("userId");
+        _hubConnection = new HubConnectionBuilder()
+                   .WithUrl(NavigationManager.BaseUri + "ChatHub")
+                   .Build();
+
+        _hubConnection.On<Message>("NewMessage", (message) =>
+        {
+            messages.Add(message);
+            StateHasChanged();
+        });
+
+        await _hubConnection.StartAsync();
+        messages = await _hubConnection.InvokeCoreAsync<List<Message>>("GetMessages", new object[0]);
+    }
+
+    void KeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            SendMessage();
+        }
+    }
+
+    void SendMessage()
+    {
+        _hubConnection.SendAsync("SendMessage", message, userId);
+        message = string.Empty;
+    }
+}

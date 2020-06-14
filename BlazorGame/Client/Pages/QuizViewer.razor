@@ -1,0 +1,41 @@
+﻿@using BlazorGame.Data
+@inject QuizService QuizService
+
+@if (Quiz == null)
+{
+    <p><em>Загрузка...</em></p>
+}
+else
+{
+    <h5 class="card-title">Доступные вопросы</h5>
+
+    if (Quiz.Count == 0)
+    {
+        <h6>Вы ответили на все вопросы.</h6>
+    }
+    else
+    {
+        <h6 class="card-subtitle mb-2 text-muted">Обновляются после правильного ответа</h6>
+        <br />
+
+        foreach (var quizItem in Quiz)
+        {
+            <QuestionViewer Item="@quizItem" State="@State" OnScoreChanged="OnScoreChanged" />
+        }
+    }
+    <CreateQuestion State="@State" OnCreated="ItemCreated" />
+}
+
+@code{
+    [Parameter]
+    public List<QuizItem> Quiz { get; set; }
+
+    [Parameter]
+    public UserState State { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnScoreChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<QuizItem> ItemCreated { get; set; }
+}

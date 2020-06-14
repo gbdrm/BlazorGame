@@ -1,0 +1,37 @@
+﻿@using BlazorGame.Data
+@inject QuizService QuizService
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Очки</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int counter = 1;
+        }
+        @if (Leaders != null)
+            foreach (var leader in Leaders)
+            {
+                <tr>
+                    <th scope="row">@counter</th>
+                    <td>@leader.Key</td>
+                    <td>@leader.Value</td>
+                </tr>
+                counter++;
+            }
+    </tbody>
+</table>
+
+@code{
+    [Parameter]
+    public Dictionary<string, int> Leaders { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+}
