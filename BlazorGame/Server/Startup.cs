@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Blazored.LocalStorage;
 
 namespace BlazorGame.Server
 {
@@ -27,9 +28,11 @@ namespace BlazorGame.Server
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
 
+            services.AddSignalR();
+            services.AddBlazoredLocalStorage();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
-            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,6 +60,9 @@ namespace BlazorGame.Server
             {
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapHub<ChatHub>("/ChatHub");
                 endpoints.MapFallbackToFile("index.html");
             });

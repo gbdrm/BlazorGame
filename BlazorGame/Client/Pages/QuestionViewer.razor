@@ -1,5 +1,5 @@
 ﻿@using BlazorGame.Data
-@inject QuizService QuizService
+@inject HttpClient httpClient
 
 <section class="mb-3" >
     <p>@Item.Question</p>
@@ -23,10 +23,10 @@
         var dbAnswer = Item?.Answer.ToLower();
         if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
         {
-            var score = await QuizService.MarkAsDoneAsync(State.UserId, quizItemId);
+            var score = await httpClient.GetFromJsonAsync<int>("/quiz/markasdone/?" + $"userId={State.UserId}&quizItemId={quizItemId}");
 
-            if(score.HasValue)
-                await OnScoreChanged.InvokeAsync(score.Value);
+            if(score > 0)
+                await OnScoreChanged.InvokeAsync(score);
         }
     }
 }

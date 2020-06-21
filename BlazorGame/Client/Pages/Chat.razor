@@ -2,7 +2,7 @@
 @using BlazorGame.Data
 @using BlazorGame.Data.Models
 @using Microsoft.AspNetCore.SignalR.Client
-@*@inject Microsoft.AspNetCore.ProtectedBrowserStorage.ProtectedLocalStorage ProtectedLocalStorage*@
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject NavigationManager NavigationManager
 
 
@@ -37,7 +37,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        userId = Guid.Empty; //await ProtectedLocalStorage.GetAsync<Guid>("userId");
+        userId = await localStorage.GetItemAsync<Guid>("userId");
         _hubConnection = new HubConnectionBuilder()
                    .WithUrl(NavigationManager.BaseUri + "ChatHub")
                    .Build();
