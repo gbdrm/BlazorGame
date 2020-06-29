@@ -1,6 +1,4 @@
-﻿@using BlazorGame.Data
-
-@if (Quiz == null)
+﻿@if (Quiz == null)
 {
     <p><em>Загрузка...</em></p>
 }
@@ -22,7 +20,11 @@ else
             <QuestionViewer Item="@quizItem" State="@State" OnRightAnswer="OnRightAnswer" />
         }
     }
-    <CreateQuestion State="@State" OnCreated="ItemCreated" />
+
+    if (State.Level >= 4)
+    {
+        <CreateQuestion State="@State" OnCreated="ItemCreated" />
+    }
 }
 
 @code{

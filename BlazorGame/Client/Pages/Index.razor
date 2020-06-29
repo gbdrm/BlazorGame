@@ -2,20 +2,23 @@
 @inject HttpClient httpClient
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
-<div class="row">
-    <div class="col-md-auto">
-        <span class="badge badge-warning">
-            Уровень <span class="badge badge-light">@state.Level</span>
-        </span>
-    </div>
-    <div class="col">
-        <div class="progress mt-1">
-            <div class="progress-bar" role="progressbar" style="width: @GetExperienceWidgetWidth()" aria-valuenow="@state.Experience" aria-valuemin="0" aria-valuemax="@experienceDiff">
-                XP: @state.Experience
+@if (state.Level >= 2)
+{
+    <div class="row">
+        <div class="col-md-auto">
+            <span class="badge badge-warning">
+                Уровень <span class="badge badge-light">@state.Level</span>
+            </span>
+        </div>
+        <div class="col">
+            <div class="progress mt-1">
+                <div class="progress-bar" role="progressbar" style="width: @GetExperienceWidgetWidth()" aria-valuenow="@state.Experience" aria-valuemin="0" aria-valuemax="@experienceDiff">
+                    XP: @state.Experience
+                </div>
             </div>
         </div>
     </div>
-</div>
+}
 
 <div class="row p-3">
     <div class="col-md-7 card">
@@ -25,11 +28,19 @@
     </div>
 </div>
 
+@if (state.Level >= 1)
+{
+<div>
+    @((MarkupString)status)
+</div>
+}
+
 @code {
-    List<QuizItem> quiz;
-    UserState state = new UserState();
-    int nextLevel = 2;
-    long experienceDiff = 2;
+        List<QuizItem> quiz;
+        UserState state = new UserState();
+        int expForNextLevel = 2;
+        long experienceDiff = 2;
+        string status = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,11 +57,28 @@
 
     async Task ExperienceChanged(long exp)
     {
+        int currentLevel = state.Level;
+        int newLevel = (int)Math.Log(exp, 2);
+        if (newLevel > currentLevel) { LevelUp(newLevel, exp); }
+
         state.Experience = exp;
-        state.Level = (int)Math.Log(exp, 2);
-        nextLevel = (int)Math.Pow(state.Level + 1, 2);
+        state.Level = newLevel;
+        expForNextLevel = (int)Math.Pow(newLevel + 1, 2);
+
         quiz = await httpClient.GetFromJsonAsync<List<QuizItem>>("/quiz/getquiz/?userId=" + state.UserId);
         StateHasChanged();
+    }
+
+    void LevelUp(int level, long exp)
+    {
+        status = $"<b>Уровень {level}!</b>";
+        switch (level)
+        {
+            case 1: status = "Хорошо идем."; break;
+            case 2: status += $"<br /> Новая возможность: просмотр текущего уровня и опыта"; break;
+            case 4: status = $"<br /> Новая возможность: создание своего вопроса"; break;
+            default: break;
+        }
     }
 
     void ItemCreated(QuizItem quizItem)
