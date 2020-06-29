@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BlazorGame.Data;
+using BlazorGame.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,18 +34,19 @@ namespace BlazorGame.Server.Controllers
 
         [HttpGet]
         [Route("MarkAsDone")]
-        public async Task<int> MarkAsDoneAsync(Guid userId, Guid quizItemId)
+        public async Task<long> MarkAsDoneAsync(Guid userId, Guid quizItemId)
         {
             var done = await _db.Completed.FirstOrDefaultAsync(c => c.UserId == userId && c.ItemId == quizItemId);
             var user = await _db.UserStates.FindAsync(userId);
             if (done == null)
             {
+                var item = await _db.QuizItems.FindAsync(quizItemId);
                 _db.Completed.Add(new Data.Models.Completed { ItemId = quizItemId, UserId = userId });
-                user.CurrentScore++;
+                user.Experience += item.ExperiencePoints;
                 await _db.SaveChangesAsync();
             }
 
-            return user.CurrentScore;
+            return user.Experience;
         }
 
         [HttpGet]
@@ -56,7 +58,7 @@ namespace BlazorGame.Server.Controllers
             {
                 user = new UserState
                 {
-                    CurrentScore = 0,
+                    Experience = 0,
                     UserId = userId,
                     CanCreate = true
                 };
@@ -91,13 +93,13 @@ namespace BlazorGame.Server.Controllers
 
         [HttpGet]
         [Route("GetLeaders")]
-        public Dictionary<string, int> GetLeaders()
+        public Dictionary<string, long> GetLeaders()
         {
             var result = _db.UserStates
                 .Where(u => u.Name != null)
-                .OrderByDescending(u => u.CurrentScore)
+                .OrderByDescending(u => u.Experience)
                 .Take(10)
-                .ToDictionary(u => u.Name, u => u.CurrentScore);
+                .ToDictionary(u => u.Name, u => u.Experience);
 
             return result;
         }

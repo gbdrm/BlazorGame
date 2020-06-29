@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace BlazorGame.Data
+namespace BlazorGame.Data.Models
 {
     public class QuizItem
     {
@@ -14,6 +14,8 @@ namespace BlazorGame.Data
 
         [Required]
         public string Answer { get; set; }
+
+        public int ExperiencePoints { get; set; } = 1;
 
         public virtual ICollection<Completed> Completed { get; set; }
     }

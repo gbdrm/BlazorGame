@@ -19,7 +19,7 @@ else
 
         foreach (var quizItem in Quiz)
         {
-            <QuestionViewer Item="@quizItem" State="@State" OnScoreChanged="OnScoreChanged" />
+            <QuestionViewer Item="@quizItem" State="@State" OnRightAnswer="OnRightAnswer" />
         }
     }
     <CreateQuestion State="@State" OnCreated="ItemCreated" />
@@ -33,7 +33,7 @@ else
     public UserState State { get; set; }
 
     [Parameter]
-    public EventCallback<int> OnScoreChanged { get; set; }
+    public EventCallback<long> OnRightAnswer { get; set; }
 
     [Parameter]
     public EventCallback<QuizItem> ItemCreated { get; set; }

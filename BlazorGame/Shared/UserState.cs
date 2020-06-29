@@ -1,12 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace BlazorGame.Data
+namespace BlazorGame.Data.Models
 {
     public class UserState
     {
-        public int CurrentScore { get; set; }
-
         [Key]
         [Required]
         public Guid UserId { get; set; }
@@ -14,5 +12,9 @@ namespace BlazorGame.Data
         public bool CanCreate { get; set; }
 
         public string Name { get; set; }
+
+
+        public int Level { get; set; }
+        public long Experience { get; set; }
     }
 }
