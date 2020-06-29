@@ -16,17 +16,17 @@
     public UserState State { get; set; }
 
     [Parameter]
-    public EventCallback<int> OnScoreChanged { get; set; }
+    public EventCallback<long> OnRightAnswer { get; set; }
 
     async void CheckAnswer(string answer, Guid quizItemId)
     {
         var dbAnswer = Item?.Answer.ToLower();
         if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
         {
-            var score = await httpClient.GetFromJsonAsync<int>("/quiz/markasdone/?" + $"userId={State.UserId}&quizItemId={quizItemId}");
+            var exp = await httpClient.GetFromJsonAsync<int>("/quiz/markasdone/?" + $"userId={State.UserId}&quizItemId={quizItemId}");
 
-            if(score > 0)
-                await OnScoreChanged.InvokeAsync(score);
+            if(exp > 0)
+                await OnRightAnswer.InvokeAsync(exp);
         }
     }
 }

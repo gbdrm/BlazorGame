@@ -1,5 +1,4 @@
-﻿@using BlazorGame.Data
-@using BlazorGame.Data.Models
+﻿@using BlazorGame.Data.Models
 @inject HttpClient httpClient
 
 @if (State.CanCreate)
@@ -43,6 +42,7 @@
 
     async Task CreateNewItem()
     {
+        quizItem.Id = Guid.NewGuid();
         var response = await httpClient.PostAsJsonAsync("/quiz/createquizitem/", new { State.UserId, quizItem });
         State.CanCreate = false;
 

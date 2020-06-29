@@ -3,7 +3,7 @@ using BlazorGame.Data.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace BlazorGame.Server
+namespace BlazorGame.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {

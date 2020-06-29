@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\BlazorGame.Shared.csproj" />
+    <ProjectReference Include="..\Shared\BlazorGame.Data.Models.csproj" />
   </ItemGroup>
 
 </Project>

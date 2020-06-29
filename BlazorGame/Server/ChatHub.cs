@@ -1,4 +1,5 @@
-﻿using BlazorGame.Data.Models;
+﻿using BlazorGame.Data;
+using BlazorGame.Data.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;

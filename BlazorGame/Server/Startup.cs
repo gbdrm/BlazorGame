@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Blazored.LocalStorage;
+using BlazorGame.Data;
 
 namespace BlazorGame.Server
 {

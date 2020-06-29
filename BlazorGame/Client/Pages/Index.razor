@@ -1,12 +1,11 @@
 ﻿@page "/"
-@using BlazorGame.Data
 @inject HttpClient httpClient
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 <div class="row p-3">
     <div class="col-md-7 card">
         <div class="card-body">
-            <QuizViewer Quiz="@quiz" State="@state" OnScoreChanged="@(async (int x) => await ScoreChanged(x))" ItemCreated="ItemCreated" />
+            <QuizViewer Quiz="@quiz" State="@state" OnRightAnswer="@(async (long x) => await ScoreChanged(x))" ItemCreated="ItemCreated" />
         </div>
     </div>
 </div>
@@ -28,9 +27,9 @@
         quiz = await httpClient.GetFromJsonAsync<List<QuizItem>>("/quiz/getquiz/?userId=" + state.UserId);
     }
 
-    async Task ScoreChanged(int score)
+    async Task ScoreChanged(long exp)
     {
-        state.CurrentScore = score;
+        state.Experience = exp;
         quiz = await httpClient.GetFromJsonAsync<List<QuizItem>>("/quiz/getquiz/?userId=" + state.UserId);
         StateHasChanged();
     }
