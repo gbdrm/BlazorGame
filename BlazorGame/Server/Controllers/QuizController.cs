@@ -41,8 +41,9 @@ namespace BlazorGame.Server.Controllers
             if (done == null)
             {
                 var item = await _db.QuizItems.FindAsync(quizItemId);
-                _db.Completed.Add(new Data.Models.Completed { ItemId = quizItemId, UserId = userId });
+                _db.Completed.Add(new Completed { ItemId = quizItemId, UserId = userId });
                 user.Experience += item.ExperiencePoints;
+                user.Level = (int)Math.Log(user.Experience, 2);
                 await _db.SaveChangesAsync();
             }
 

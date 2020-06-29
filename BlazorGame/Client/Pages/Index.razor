@@ -2,10 +2,25 @@
 @inject HttpClient httpClient
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
+<div class="row">
+    <div class="col-md-auto">
+        <span class="badge badge-warning">
+            Уровень <span class="badge badge-light">@state.Level</span>
+        </span>
+    </div>
+    <div class="col">
+        <div class="progress mt-1">
+            <div class="progress-bar" role="progressbar" style="width: @GetExperienceWidgetWidth()" aria-valuenow="@state.Experience" aria-valuemin="0" aria-valuemax="@experienceDiff">
+                XP: @state.Experience
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row p-3">
     <div class="col-md-7 card">
         <div class="card-body">
-            <QuizViewer Quiz="@quiz" State="@state" OnRightAnswer="@(async (long x) => await ScoreChanged(x))" ItemCreated="ItemCreated" />
+            <QuizViewer Quiz="@quiz" State="@state" OnRightAnswer="@(async (long x) => await ExperienceChanged(x))" ItemCreated="ItemCreated" />
         </div>
     </div>
 </div>
@@ -13,6 +28,8 @@
 @code {
     List<QuizItem> quiz;
     UserState state = new UserState();
+    int nextLevel = 2;
+    long experienceDiff = 2;
 
     protected override async Task OnInitializedAsync()
     {
@@ -27,9 +44,11 @@
         quiz = await httpClient.GetFromJsonAsync<List<QuizItem>>("/quiz/getquiz/?userId=" + state.UserId);
     }
 
-    async Task ScoreChanged(long exp)
+    async Task ExperienceChanged(long exp)
     {
         state.Experience = exp;
+        state.Level = (int)Math.Log(exp, 2);
+        nextLevel = (int)Math.Pow(state.Level + 1, 2);
         quiz = await httpClient.GetFromJsonAsync<List<QuizItem>>("/quiz/getquiz/?userId=" + state.UserId);
         StateHasChanged();
     }
@@ -37,5 +56,15 @@
     void ItemCreated(QuizItem quizItem)
     {
         quiz.Add(quizItem);
+    }
+
+    string GetExperienceWidgetWidth()
+    {
+        long prevExp = (int)Math.Pow(2, state.Level);
+        long nextExp = (int)Math.Pow(2, state.Level + 1);
+        long experienceDiff = nextExp - prevExp;
+        long value = state.Experience - prevExp;
+
+        return ((double)100 * value / experienceDiff) + "%";
     }
 }
