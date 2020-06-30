@@ -4,11 +4,18 @@
 <section class="mb-3" >
     <p>@Item.Question</p>
     <div>
-        <input class="form-control" type="text" @oninput="@((eventArgs) => CheckAnswer(eventArgs.Value.ToString(), Item.Id))" />
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" @bind="answer" @onkeyup="KeyUp">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" @onclick="CheckAnswer">Отправить</button>
+            </div>
+        </div>
     </div>
 </section>
 
 @code{
+    string answer;
+
     [Parameter]
     public QuizItem Item { get; set; }
 
@@ -18,12 +25,21 @@
     [Parameter]
     public EventCallback<long> OnRightAnswer { get; set; }
 
-    async void CheckAnswer(string answer, Guid quizItemId)
+    void KeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            CheckAnswer();
+        }
+    }
+
+    async void CheckAnswer()
     {
         var dbAnswer = Item?.Answer.ToLower();
         if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
         {
-            var exp = await httpClient.GetFromJsonAsync<int>("/quiz/markasdone/?" + $"userId={State.UserId}&quizItemId={quizItemId}");
+            answer = "";
+            var exp = await httpClient.GetFromJsonAsync<int>("/quiz/markasdone/?" + $"userId={State.UserId}&quizItemId={Item.Id}");
 
             if(exp > 0)
                 await OnRightAnswer.InvokeAsync(exp);
