@@ -94,27 +94,28 @@ namespace BlazorGame.Server.Controllers
 
         [HttpGet]
         [Route("GetLeaders")]
-        public Dictionary<string, long> GetLeaders()
+        public Dictionary<string, int> GetLeaders()
         {
             var result = _db.UserStates
                 .Where(u => u.Name != null)
                 .OrderByDescending(u => u.Experience)
                 .Take(10)
-                .ToDictionary(u => u.Name, u => u.Experience);
+                .ToDictionary(u => u.Name, u => u.Level);
 
             return result;
         }
 
+        [HttpPost]
         [Route("SetName")]
-        public async Task<bool> SetNameAsync(Guid userId, string name)
+        public async Task<bool> SetNameAsync(UserState input)
         {
-            if (string.IsNullOrWhiteSpace(name) || name.Length < 3) return false;
+            if (string.IsNullOrWhiteSpace(input.Name) || input.Name.Length < 3) return false;
 
-            var isUnique = await _db.UserStates.FirstOrDefaultAsync(u => u.Name == name);
+            var isUnique = await _db.UserStates.FirstOrDefaultAsync(u => u.Name == input.Name);
             if (isUnique != null) return false;
 
-            var user = await _db.UserStates.FindAsync(userId);
-            user.Name = name;
+            var user = await _db.UserStates.FindAsync(input.UserId);
+            user.Name = input.Name;
             await _db.SaveChangesAsync();
             return true;
         }

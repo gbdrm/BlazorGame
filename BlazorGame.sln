@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorGame.Client", "Blazor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorGame.Data.Models", "BlazorGame\Shared\BlazorGame.Data.Models.csproj", "{2FEB6F7E-FDE1-4D57-B1C6-ED49195BB3CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorGame.Data", "BlazorGame\BlazorGame.Data\BlazorGame.Data.csproj", "{8327048D-C509-4408-9BF1-B159BFFA0EF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorGame.Data", "BlazorGame\BlazorGame.Data\BlazorGame.Data.csproj", "{8327048D-C509-4408-9BF1-B159BFFA0EF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

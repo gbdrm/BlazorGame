@@ -21,26 +21,55 @@
 }
 
 <div class="row p-3">
-    <div class="col-md-7 card">
+    <div class="col-md-7 card ml-2 mr-2 mb-2">
         <div class="card-body">
             <QuizViewer Quiz="@quiz" State="@state" OnRightAnswer="@(async (long x) => await ExperienceChanged(x))" ItemCreated="ItemCreated" />
         </div>
     </div>
-</div>
+    @if (state.Level >= 3)
+    {
+        <div class="col-md-4 card ml-2 mr-2 mb-2">
+            <div class="card-body">
+                <h5 class="card-title">Топ 10</h5>
+                @*<h6 class="card-subtitle mb-2 text-muted">Рейтинг правильных ответов</h6>*@
+                <br />
+
+                <LeaderBoard Leaders="@leaders" />
+
+                <p class="form-group">
+                    @if (string.IsNullOrEmpty(state.Name))
+                    {
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" @bind="name" @onkeyup="KeyUp">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" @onclick="SetName">OK</button>
+                            </div>
+                            <label style="@nameOccupiedStyle">Это имя слишком короткое или уже занято, попробуйте другое</label>
+                        </div>
+                    }
+                </p>
+            </div>
+        </div>
+    }
+    </div>
 
 @if (state.Level >= 1)
 {
-<div>
-    @((MarkupString)status)
-</div>
+    <div>
+        @((MarkupString)status)
+    </div>
 }
 
 @code {
-        List<QuizItem> quiz;
-        UserState state = new UserState();
-        int expForNextLevel = 2;
-        long experienceDiff = 2;
-        string status = null;
+    List<QuizItem> quiz;
+    UserState state = new UserState();
+    int expForNextLevel = 2;
+    long experienceDiff = 2;
+    string status = null;
+    string nameOccupiedStyle = "display:none";
+    string name;
+    Dictionary<string, int> leaders;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,6 +82,7 @@
 
         state = await httpClient.GetFromJsonAsync<UserState>("/quiz/getstate/?userId=" + state.UserId);
         quiz = await httpClient.GetFromJsonAsync<List<QuizItem>>("/quiz/getquiz/?userId=" + state.UserId);
+        leaders = await httpClient.GetFromJsonAsync<Dictionary<string, int>>("/quiz/getleaders");
     }
 
     async Task ExperienceChanged(long exp)
@@ -66,7 +96,7 @@
         expForNextLevel = (int)Math.Pow(newLevel + 1, 2);
 
         quiz = await httpClient.GetFromJsonAsync<List<QuizItem>>("/quiz/getquiz/?userId=" + state.UserId);
-        StateHasChanged();
+        leaders = await httpClient.GetFromJsonAsync<Dictionary<string, int>>("/quiz/getleaders");
     }
 
     void LevelUp(int level, long exp)
@@ -76,6 +106,7 @@
         {
             case 1: status = "Хорошо идем."; break;
             case 2: status += $"<br /> Новая возможность: просмотр текущего уровня и опыта"; break;
+            case 3: status += $"<br /> Новая возможность: просмотр рейтинга топ 10"; break;
             case 4: status += $"<br /> Новая возможность: создание своего вопроса"; break;
             default: break;
         }
@@ -94,5 +125,30 @@
         long value = state.Experience - prevExp;
 
         return ((double)100 * value / experienceDiff) + "%";
+    }
+
+    async Task SetName()
+    {
+        var response = await httpClient.PostAsJsonAsync("/quiz/setname/", new { state.UserId, name });
+        var successful = await response.Content.ReadFromJsonAsync<bool>();
+        if (response.IsSuccessStatusCode && successful)
+        {
+            leaders = await httpClient.GetFromJsonAsync<Dictionary<string, int>>("/quiz/getleaders");
+            nameOccupiedStyle = "display:none";
+            state.Name = name;
+        }
+        else
+        {
+            state.Name = null;
+            nameOccupiedStyle = string.Empty;
+        }
+    }
+
+    async Task KeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SetName();
+        }
     }
 }

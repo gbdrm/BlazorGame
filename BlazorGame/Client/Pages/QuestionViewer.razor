@@ -1,20 +1,24 @@
-﻿@using BlazorGame.Data
+﻿@using System.Timers
 @inject HttpClient httpClient
 
 <section class="mb-3" >
     <p>@Item.Question</p>
     <div>
-        <div class="input-group mb-3">
+        <div class="input-group mb-1">
             <input type="text" class="form-control" @bind="answer" @onkeyup="KeyUp">
             <div class="input-group-append">
                 <button class="btn btn-outline-secondary" type="button" @onclick="CheckAnswer">Отправить</button>
             </div>
         </div>
+        <label style="@wrongStyle">Не верно</label>
     </div>
 </section>
 
 @code{
     string answer;
+    string wrongStyle = "visibility:hidden";
+    Random rnd = new Random();
+    List<string> letters = new List<string>() { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C" };
 
     [Parameter]
     public QuizItem Item { get; set; }
@@ -38,11 +42,27 @@
         var dbAnswer = Item?.Answer.ToLower();
         if (!string.IsNullOrEmpty(dbAnswer) && answer.ToLower().Contains(dbAnswer))
         {
+            wrongStyle = "visibility:hidden";
             answer = "";
             var exp = await httpClient.GetFromJsonAsync<int>("/quiz/markasdone/?" + $"userId={State.UserId}&quizItemId={Item.Id}");
 
             if(exp > 0)
                 await OnRightAnswer.InvokeAsync(exp);
+        }
+        else
+        {
+            var color = "#";
+            for (var i = 0; i < 6; i++)
+            {
+                int index = (int)Math.Floor(rnd.NextDouble() * 13);
+                color += letters[index];
+            }
+
+            wrongStyle = "color:" + color;
+
+            var timer = new Timer(1);
+            timer.Elapsed += (object sender, ElapsedEventArgs e) => { wrongStyle = "visibility:hidden"; };
+            timer.Start();
         }
     }
 }
