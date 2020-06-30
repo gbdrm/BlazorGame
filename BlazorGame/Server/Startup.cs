@@ -9,6 +9,10 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Blazored.LocalStorage;
 using BlazorGame.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using BlazorGame.Data.Models;
 
 namespace BlazorGame.Server
 {
@@ -28,6 +32,11 @@ namespace BlazorGame.Server
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+               .AddRoles<IdentityRole>()
+               .AddUserManager<UserManager<ApplicationUser>>()
+               .AddEntityFrameworkStores<ApplicationDbContext>()
+               .AddDefaultTokenProviders();
 
             services.AddSignalR();
             services.AddBlazoredLocalStorage();
@@ -56,6 +65,8 @@ namespace BlazorGame.Server
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
